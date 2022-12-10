@@ -10,19 +10,49 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+  const user = users.find(u => u.username === username)
+  if (!user) {
+    return response.status(404).json({error:"User does not exist."})
+  }
+  request.user = user
+  next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+  if (!user.pro && user.todos.length >= 10) {
+    return response.status(403).json({error:"Limit of 10 todos already reached for free trial plan"})
+  } else {
+    next()
+  }
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { id } = request.params
+  if (id.length !== uuidv4().length) {
+    return response.status(400).json({error:"Invalid uuid."})
+  }
+  const { username } = request.headers
+  const user = users.find(u => u.username === username)
+  const todo = user ? user.todos.find( todo => todo.id === id) : undefined
+  if (!todo || !user) {
+    return response.status(404).json({error:"Todo does not exist."})
+  }
+  request.todo = todo
+  request.user = user
+  next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params
+  const user = users.find(u => u.id === id)
+  if (!user) {
+    return response.status(404).json({error:"User does not exist."})
+  }
+  request.user = user
+  next()
 }
 
 app.post('/users', (request, response) => {
